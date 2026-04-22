@@ -10,6 +10,11 @@
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://pdfly.vercel.app/" />
 
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#5C7A1F">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
   <!-- Open Graph -->
   <meta property="og:title" content="PDFly — Free Image to PDF Converter Online" />
   <meta property="og:description" content="Drag, drop, reorder, watermark and download PDFs in seconds. No signup required." />
@@ -58,7 +63,6 @@
       --tr:    0.2s cubic-bezier(.4,0,.2,1);
       --font-h: 'Playfair Display', Georgia, serif;
       --font-b: 'Inter', sans-serif;
-      /* Brand colours — light mode: PDF=dark, ly=green */
       --brand-pdf: #1E2010;
       --brand-ly:  #5C7A1F;
     }
@@ -77,7 +81,6 @@
       --shadow1:     0 1px 4px rgba(0,0,0,0.3);
       --shadow2:     0 4px 20px rgba(0,0,0,0.4);
       --shadow3:     0 12px 48px rgba(0,0,0,0.5);
-      /* Brand colours — dark mode: PDF=white, ly=green */
       --brand-pdf: #FFFFFF;
       --brand-ly:  #8AAB3A;
     }
@@ -101,9 +104,6 @@
     button { font-family: var(--font-b); }
     a { color: inherit; text-decoration: none; }
 
-    /* ============================================
-       NAVBAR
-    ============================================ */
     header {
       position: sticky;
       top: 0;
@@ -124,10 +124,6 @@
       justify-content: space-between;
     }
 
-    /*
-      nav-brand = <button> so it never triggers file picker or navigates.
-      Clicking it calls location.reload() via JS → goes to home page.
-    */
     .nav-brand {
       display: flex;
       align-items: center;
@@ -147,7 +143,6 @@
       outline-offset: 3px;
     }
 
-    /* Logo image — loaded from images/logo.png */
     .nav-logo-img {
       height: 32px;
       width: auto;
@@ -155,13 +150,12 @@
       display: block;
     }
 
-    /* Fallback shown if logo.png fails to load */
     .nav-logo-fallback {
       width: 34px;
       height: 34px;
       background: linear-gradient(135deg, var(--olive), var(--olive-light));
       border-radius: 9px;
-      display: none;           /* shown by onerror JS */
+      display: none;
       align-items: center;
       justify-content: center;
       font-family: var(--font-h);
@@ -172,7 +166,6 @@
       flex-shrink: 0;
     }
 
-    /* Brand text: PDF part + ly part styled separately */
     .nav-name {
       font-family: var(--font-h);
       font-size: 1.3rem;
@@ -181,14 +174,12 @@
       line-height: 1;
     }
 
-    /* "PDF" — black in light mode, white in dark mode */
     .brand-pdf {
       color: var(--brand-pdf);
       font-style: normal;
       transition: color var(--tr);
     }
 
-    /* "ly" — always olive/green, italic */
     .brand-ly {
       color: var(--brand-ly);
       font-style: italic;
@@ -229,9 +220,6 @@
     }
     .btn-icon:hover { background: var(--olive-pale); transform: rotate(18deg); border-color: var(--olive-pale); }
 
-    /* ============================================
-       MAIN
-    ============================================ */
     main {
       flex: 1;
       width: 100%;
@@ -240,9 +228,6 @@
       flex-direction: column;
     }
 
-    /* ============================================
-       HERO
-    ============================================ */
     .hero {
       width: 100%;
       padding: 52px 32px 36px;
@@ -274,9 +259,6 @@
       line-height: 1.6;
     }
 
-    /* ============================================
-       WORKSPACE
-    ============================================ */
     .workspace {
       flex: 1;
       width: 100%;
@@ -289,9 +271,6 @@
 
     .workspace > * { width: 100%; }
 
-    /* ============================================
-       DROP ZONE
-    ============================================ */
     .drop-zone {
       width: 100%;
       max-width: 900px;
@@ -371,9 +350,6 @@
     .btn-pick:active { transform: translateY(0); }
     #file-input { display: none; }
 
-    /* ============================================
-       STATS BAR
-    ============================================ */
     .stats-bar {
       display: flex;
       align-items: stretch;
@@ -414,9 +390,6 @@
       border-left: 1px solid var(--border);
     }
 
-    /* ============================================
-       PREVIEW GRID
-    ============================================ */
     .preview-section { display: flex; flex-direction: column; gap: 16px; }
     .preview-section.hidden { display: none; }
 
@@ -426,9 +399,6 @@
       gap: 14px;
     }
 
-    /* ============================================
-       IMAGE CARD
-    ============================================ */
     .img-card {
       background: var(--surface);
       border-radius: var(--r-md);
@@ -490,9 +460,6 @@
     .img-card:hover .card-del { opacity: 1; }
     .card-del:hover { background: var(--red); transform: scale(1.1); }
 
-    /* ============================================
-       ACTION BUTTONS ROW
-    ============================================ */
     .actions-bar {
       display: flex;
       align-items: center;
@@ -551,9 +518,6 @@
       gap: 7px;
     }
 
-    /* ============================================
-       MODAL BASE
-    ============================================ */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -626,9 +590,6 @@
     }
     .modal-close:hover { background: var(--red-pale); color: var(--red); border-color: var(--red); }
 
-    /* ============================================
-       FORM ELEMENTS
-    ============================================ */
     .form-group { margin-bottom: 20px; }
 
     .form-label {
@@ -786,9 +747,6 @@
     }
     .modal-footer .btn { flex: 1; justify-content: center; }
 
-    /* ============================================
-       PROGRESS OVERLAY
-    ============================================ */
     .progress-overlay {
       position: fixed;
       inset: 0;
@@ -861,9 +819,6 @@
       color: var(--olive);
     }
 
-    /* ============================================
-       TOAST
-    ============================================ */
     .toast-wrap {
       position: fixed;
       bottom: 20px; right: 20px;
@@ -901,9 +856,6 @@
     .toast.error   { border-left: 3px solid var(--red); }
     .toast.info    { border-left: 3px solid #4A90D9; }
 
-    /* ============================================
-       FOOTER — slim
-    ============================================ */
     footer {
       width: 100%;
       border-top: 1px solid var(--border);
@@ -922,9 +874,6 @@
     .footer-text a { color: var(--olive); }
     .footer-text a:hover { text-decoration: underline; }
 
-    /* ============================================
-       RESPONSIVE
-    ============================================ */
     @media (max-width: 640px) {
       .navbar { padding: 0 16px; height: 54px; }
       .hero { padding: 32px 16px 24px; }
@@ -945,9 +894,6 @@
       footer { padding: 10px 16px; }
     }
 
-    /* ============================================
-       UTILS
-    ============================================ */
     .hidden { display: none !important; }
     .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 
@@ -988,42 +934,15 @@
 </head>
 <body>
 
-<!-- ==========================================
-     NAVBAR
-=========================================== -->
 <header>
   <nav class="navbar" role="navigation" aria-label="Main navigation">
-
-    <!--
-      nav-brand is a <button type="button"> — NOT an <a> tag.
-      This means clicking it NEVER opens a file picker and NEVER
-      triggers any browser file-open dialog.
-      The JS below handles click → window.location.href = '/' (home page reload).
-    -->
-    <button
-      class="nav-brand"
-      id="nav-brand"
-      type="button"
-      aria-label="PDFly — Click to go to home page"
-      title="Go to home page"
-    >
-      <!-- Logo loaded from images/logo.png -->
-      <img
-        id="nav-logo"
-        src="images/logo.png"
-        alt="PDFly logo"
-        class="nav-logo-img"
-        onerror="this.style.display='none'; document.getElementById('nav-logo-fb').style.display='flex';"
-      />
-      <!-- Fallback if logo.png is missing -->
+    <button class="nav-brand" id="nav-brand" type="button" aria-label="PDFly — Click to go to home page" title="Go to home page">
+      <img id="nav-logo" src="images/logo.png" alt="PDFly logo" class="nav-logo-img" onerror="this.style.display='none'; document.getElementById('nav-logo-fb').style.display='flex';" />
       <div class="nav-logo-fallback" id="nav-logo-fb" aria-hidden="true">Pf</div>
-
-      <!-- Brand text: PDF=dark(light)/white(dark)  ly=green always -->
       <span class="nav-name" aria-label="PDFly">
         <span class="brand-pdf">PDF</span><span class="brand-ly">ly</span>
       </span>
     </button>
-
     <div class="nav-right">
       <span class="chip-free">100% Free</span>
       <button class="btn-icon" id="dark-toggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙</button>
@@ -1031,33 +950,19 @@
   </nav>
 </header>
 
-<!-- ==========================================
-     HERO
-=========================================== -->
 <section class="hero" aria-labelledby="hero-h1">
   <h1 id="hero-h1">Convert <em>Images</em> to PDF<br>Instantly &amp; Free</h1>
   <p>Drag &amp; drop images, reorder pages, add watermarks, set passwords — download your perfect PDF in seconds.</p>
 </section>
 
-<!-- ==========================================
-     MAIN
-=========================================== -->
 <main id="main">
   <div class="workspace">
-
-    <!-- Drop Zone -->
     <section aria-labelledby="upload-h2">
       <h2 id="upload-h2" class="visually-hidden">Upload Images</h2>
-      <div
-        class="drop-zone"
-        id="drop-zone"
-        role="button"
-        tabindex="0"
-        aria-label="Drop images here or click to choose files"
-      >
+      <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="Drop images here or click to choose files">
         <span class="dz-icon" aria-hidden="true">📁</span>
         <h2>Drop images here</h2>
-        <p>JPG, PNG, WEBP, GIF, BMP &bull; Unlimited images</p>
+        <p>JPG, PNG, WEBP, GIF, BMP  </p>
         <button class="btn-pick" id="btn-pick" type="button" aria-label="Open file picker">
           <span aria-hidden="true">＋</span> Choose Files
         </button>
@@ -1065,7 +970,6 @@
       </div>
     </section>
 
-    <!-- Stats Bar -->
     <div class="stats-bar hidden" id="stats-bar" role="status" aria-live="polite">
       <div class="stat-pill">
         <span class="stat-icon" aria-hidden="true">🖼️</span>
@@ -1084,12 +988,10 @@
       </div>
     </div>
 
-    <!-- Preview Grid -->
     <section class="preview-section hidden" id="preview-section" aria-label="Uploaded images preview">
       <div class="preview-grid" id="preview-grid" role="list"></div>
     </section>
 
-    <!-- Actions -->
     <div class="actions-bar hidden" id="actions-bar">
       <button class="btn btn-primary" id="btn-generate" type="button">
         <span aria-hidden="true">📥</span> Download PDF
@@ -1105,13 +1007,9 @@
     <p class="empty-hint" id="empty-hint" aria-live="polite">
       <span aria-hidden="true">☝️</span> Upload images above to get started
     </p>
-
   </div>
 </main>
 
-<!-- ==========================================
-     FOOTER
-=========================================== -->
 <footer>
   <p class="footer-text">
     Made with ❤️ by
@@ -1122,12 +1020,8 @@
   </p>
 </footer>
 
-<!-- ==========================================
-     DOWNLOAD OPTIONS MODAL
-=========================================== -->
 <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
   <div class="modal" role="document">
-
     <div class="modal-header">
       <div>
         <div class="modal-title" id="modal-title">⚙️ PDF Options</div>
@@ -1255,13 +1149,9 @@
         <span aria-hidden="true">📥</span> Download PDF
       </button>
     </div>
-
   </div>
 </div>
 
-<!-- ==========================================
-     PROGRESS OVERLAY
-=========================================== -->
 <div class="progress-overlay" id="progress-overlay" role="dialog" aria-modal="true" aria-labelledby="prog-title">
   <div class="progress-card">
     <div class="progress-spinner" aria-hidden="true"></div>
@@ -1274,27 +1164,15 @@
   </div>
 </div>
 
-<!-- ==========================================
-     TOAST
-=========================================== -->
 <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
-<!-- ==========================================
-     JAVASCRIPT
-=========================================== -->
 <script>
-/* =============================================
-   STATE
-============================================= */
 const state = {
   images: [],
   nextId: 1,
   wmImgDataURL: null,
 };
 
-/* =============================================
-   DARK MODE
-============================================= */
 const darkBtn = document.getElementById('dark-toggle');
 const saved = localStorage.getItem('pdfly-dark');
 let dark = saved !== null ? saved === '1' : window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1311,19 +1189,10 @@ darkBtn.addEventListener('click', () => {
 });
 applyTheme();
 
-/* =============================================
-   LOGO / BRAND NAME CLICK → HOME PAGE
-   Uses window.location.pathname to reload
-   index page cleanly without extra params.
-   Does NOT open file picker. Does NOT navigate away.
-============================================= */
 document.getElementById('nav-brand').addEventListener('click', function () {
   window.location.href = window.location.pathname;
 });
 
-/* =============================================
-   ELEMENT REFS
-============================================= */
 const dropZone       = document.getElementById('drop-zone');
 const fileInput      = document.getElementById('file-input');
 const btnPick        = document.getElementById('btn-pick');
@@ -1371,9 +1240,6 @@ const wmImgInput     = document.getElementById('wm-img-input');
 const wmImgPreview   = document.getElementById('wm-img-preview');
 const toastWrap      = document.getElementById('toast-wrap');
 
-/* =============================================
-   UTILS
-============================================= */
 function formatBytes(b) {
   if (b < 1024) return b + ' B';
   if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
@@ -1418,9 +1284,6 @@ function getImgDims(src) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-/* =============================================
-   TOAST
-============================================= */
 function toast(msg, type = 'info', dur = 3200) {
   const icons = { success: '✅', error: '❌', info: 'ℹ️' };
   const el = document.createElement('div');
@@ -1433,9 +1296,6 @@ function toast(msg, type = 'info', dur = 3200) {
   }, dur);
 }
 
-/* =============================================
-   PROGRESS
-============================================= */
 function showProg(step = 'Starting…') {
   progFill.style.width = '0%';
   progPct.textContent = '0%';
@@ -1454,9 +1314,6 @@ function setProg(pct, step) {
 
 function hideProg() { progOverlay.classList.remove('active'); }
 
-/* =============================================
-   UI RENDER
-============================================= */
 function renderStats() {
   const n = state.images.length;
   const total = state.images.reduce((s, i) => s + i.size, 0);
@@ -1538,9 +1395,6 @@ function updateBadges() {
   });
 }
 
-/* =============================================
-   SORTABLE
-============================================= */
 let sortable = null;
 function initSortable() {
   if (sortable) { sortable.destroy(); sortable = null; }
@@ -1563,9 +1417,6 @@ function initSortable() {
   });
 }
 
-/* =============================================
-   ADD FILES
-============================================= */
 async function addFiles(files) {
   const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
   if (!valid.length) { toast('Only image files are accepted.', 'error'); return; }
@@ -1585,9 +1436,6 @@ async function addFiles(files) {
   toast(`${valid.length} image${valid.length > 1 ? 's' : ''} added!`, 'success');
 }
 
-/* =============================================
-   REMOVE / CLEAR
-============================================= */
 function removeImage(id) {
   state.images = state.images.filter(i => i.id !== id);
   renderGrid();
@@ -1602,9 +1450,6 @@ function clearAll() {
   toast('All images cleared.', 'info');
 }
 
-/* =============================================
-   DROP ZONE EVENTS
-============================================= */
 dropZone.addEventListener('click', e => {
   if (!e.target.closest('#btn-pick')) fileInput.click();
 });
@@ -1636,9 +1481,6 @@ document.body.addEventListener('drop', e => {
 
 btnClear.addEventListener('click', () => { if (confirm('Clear all images?')) clearAll(); });
 
-/* =============================================
-   MODAL CONTROLS
-============================================= */
 function openModal() {
   if (!pdfFilename.value.trim()) pdfFilename.value = 'PDFly';
   modalOverlay.classList.add('active');
@@ -1656,13 +1498,11 @@ modalClose.addEventListener('click', closeModal);
 modalCancel.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
 
-/* Watermark toggle */
 wmEnabled.addEventListener('change', () => {
   wmSettings.style.display = wmEnabled.checked ? '' : 'none';
 });
 wmSettings.style.display = '';
 
-/* Watermark type tabs */
 tabText.addEventListener('click', () => {
   tabText.classList.add('active');     tabText.setAttribute('aria-selected', 'true');
   tabImage.classList.remove('active'); tabImage.setAttribute('aria-selected', 'false');
@@ -1676,16 +1516,13 @@ tabImage.addEventListener('click', () => {
   wmTextPanel.classList.add('hidden');
 });
 
-/* Range sliders */
 wmFontSize.addEventListener('input', () => wmFontSizeVal.textContent = wmFontSize.value);
 wmOpacity.addEventListener('input', () => wmOpacityVal.textContent = wmOpacity.value + '%');
 
-/* Password toggle */
 pwdEnabled.addEventListener('change', () => {
   pwdSettings.classList.toggle('hidden', !pwdEnabled.checked);
 });
 
-/* Watermark image upload */
 btnWmImg.addEventListener('click', () => wmImgInput.click());
 wmImgInput.addEventListener('change', async e => {
   const file = e.target.files?.[0];
@@ -1697,9 +1534,6 @@ wmImgInput.addEventListener('change', async e => {
   wmImgInput.value = '';
 });
 
-/* =============================================
-   WATERMARK DRAWING
-============================================= */
 async function drawWatermark(ctx, w, h, opts) {
   const { type, text, fontSize, color, opacity, position, wmImgSrc } = opts;
 
@@ -1754,9 +1588,6 @@ async function drawWatermark(ctx, w, h, opts) {
   ctx.restore();
 }
 
-/* =============================================
-   PDF GENERATION
-============================================= */
 async function generatePDF() {
   const { jsPDF } = window.jspdf;
   if (!jsPDF) { toast('PDF library not loaded. Please refresh.', 'error'); return; }
@@ -1876,17 +1707,224 @@ async function generatePDF() {
 
 modalConfirm.addEventListener('click', generatePDF);
 
-/* =============================================
-   KEYBOARD ACCESSIBILITY
-============================================= */
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
 });
 
-/* =============================================
-   INITIAL RENDER
-============================================= */
 renderStats();
+
+// ============================================
+// PWA Installation & Service Worker Handler
+// ============================================
+(function() {
+    let deferredPrompt;
+    let installButton = null;
+    
+    function createInstallButton() {
+        const btn = document.createElement('button');
+        btn.id = 'install-pwa';
+        btn.innerHTML = '📲 Install App';
+        btn.className = 'btn-install-pwa';
+        btn.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #5C7A1F;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        `;
+        
+        btn.addEventListener('mouseenter', () => {
+            btn.style.transform = 'translateY(-2px)';
+            btn.style.boxShadow = '0 6px 16px rgba(0,0,0,0.2)';
+        });
+        
+        btn.addEventListener('mouseleave', () => {
+            btn.style.transform = 'translateY(0)';
+            btn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        });
+        
+        btn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                    localStorage.setItem('pwa-installed', 'true');
+                }
+                deferredPrompt = null;
+                btn.style.display = 'none';
+            }
+        });
+        
+        document.body.appendChild(btn);
+        return btn;
+    }
+    
+    function isPWAInstalled() {
+        return window.matchMedia('(display-mode: standalone)').matches ||
+               localStorage.getItem('pwa-installed') === 'true';
+    }
+    
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js', {
+                    scope: '/'
+                });
+                
+                console.log('Service Worker registered with scope:', registration.scope);
+                
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateNotification();
+                        }
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Service Worker registration failed:', error);
+            }
+        });
+    }
+    
+    function showUpdateNotification() {
+        const notification = document.createElement('div');
+        notification.className = 'update-notification';
+        notification.innerHTML = `
+            <div style="
+                position: fixed;
+                bottom: 80px;
+                right: 20px;
+                background: white;
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                z-index: 1000;
+                max-width: 300px;
+                border-left: 4px solid #5C7A1F;
+                animation: slideIn 0.3s ease;
+            ">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <span style="font-size: 24px;">🔄</span>
+                    <strong style="color: #333;">Update Available!</strong>
+                </div>
+                <p style="color: #666; margin-bottom: 12px; font-size: 14px;">A new version is available. Refresh to update.</p>
+                <button id="update-btn" style="
+                    background: #5C7A1F;
+                    color: white;
+                    border: none;
+                    padding: 6px 16px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 13px;
+                ">Update Now</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        document.getElementById('update-btn')?.addEventListener('click', () => {
+            window.location.reload();
+        });
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 10000);
+    }
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .btn-install-pwa {
+                bottom: 10px !important;
+                right: 10px !important;
+                padding: 10px 16px !important;
+                font-size: 12px !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        if (!isPWAInstalled()) {
+            if (!installButton) {
+                installButton = createInstallButton();
+            }
+            installButton.style.display = 'flex';
+            
+            setTimeout(() => {
+                if (installButton && installButton.style.display === 'flex') {
+                    installButton.style.opacity = '0';
+                    setTimeout(() => {
+                        if (installButton) installButton.style.display = 'none';
+                    }, 500);
+                }
+            }, 10000);
+        }
+    });
+    
+    window.addEventListener('appinstalled', () => {
+        console.log('PWA was installed');
+        deferredPrompt = null;
+        if (installButton) installButton.style.display = 'none';
+        localStorage.setItem('pwa-installed', 'true');
+        
+        const successMsg = document.createElement('div');
+        successMsg.textContent = '✓ PDFly installed successfully!';
+        successMsg.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #5C7A1F;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 1000;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+    });
+    
+    if ('serviceWorker' in navigator) {
+        setInterval(() => {
+            navigator.serviceWorker.ready.then(registration => {
+                registration.update();
+            });
+        }, 3600000);
+    }
+})();
 </script>
 
 </body>
