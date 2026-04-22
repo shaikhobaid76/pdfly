@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDFly — Free Image to PDF Converter</title>
+  <meta name="description" content="Convert images to PDF free online with PDFly. Add watermarks, set passwords, reorder pages, and download instantly. No signup. Works on mobile & desktop." />
+  <meta name="keywords" content="PDFly, image to PDF, free PDF maker, convert images to PDF, PDF creator online, add watermark PDF, password protect PDF, JPG to PDF, PNG to PDF" />
+  <meta name="author" content="PDFly" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://pdfly.vercel.app/" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="PDFly — Free Image to PDF Converter Online" />
+  <meta property="og:description" content="Drag, drop, reorder, watermark and download PDFs in seconds. No signup required." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="images/logo.png" />
+  <meta property="og:url" content="https://pdfly.vercel.app/" />
+  <meta property="og:site_name" content="PDFly" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PDFly — Free Image to PDF Converter" />
+  <meta name="twitter:description" content="Drag, drop, watermark, lock and download beautiful PDFs instantly." />
+  <meta name="twitter:image" content="images/logo.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+
+  <!-- Libraries CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:           #F7F4EF;
+      --surface:      #FFFFFF;
+      --surface2:     #F0ECE5;
+      --border:       #DDD8CF;
+      --olive:        #5C7A1F;
+      --olive2:       #6B8E23;
+      --olive-light:  #8AAB3A;
+      --olive-pale:   #D8EAA8;
+      --olive-xpale:  #EDF5D0;
+      --text:         #1E2010;
+      --text2:        #5A5E48;
+      --text3:        #8A907A;
+      --red:          #B83232;
+      --red-pale:     #FDEAEA;
+      --shadow1:      0 1px 4px rgba(0,0,0,0.06);
+      --shadow2:      0 4px 20px rgba(0,0,0,0.09);
+      --shadow3:      0 12px 48px rgba(0,0,0,0.14);
+      --r-sm:  6px;
+      --r-md:  12px;
+      --r-lg:  20px;
+      --r-xl:  28px;
+      --tr:    0.2s cubic-bezier(.4,0,.2,1);
+      --font-h: 'Playfair Display', Georgia, serif;
+      --font-b: 'Inter', sans-serif;
+      /* Brand colours — light mode: PDF=dark, ly=green */
+      --brand-pdf: #1E2010;
+      --brand-ly:  #5C7A1F;
+    }
+
+    [data-theme="dark"] {
+      --bg:          #141410;
+      --surface:     #1E1E18;
+      --surface2:    #28281F;
+      --border:      #38382C;
+      --text:        #EEEEDD;
+      --text2:       #9A9E80;
+      --text3:       #6A6E58;
+      --olive-pale:  rgba(107,142,35,0.18);
+      --olive-xpale: rgba(107,142,35,0.10);
+      --red-pale:    rgba(184,50,50,0.15);
+      --shadow1:     0 1px 4px rgba(0,0,0,0.3);
+      --shadow2:     0 4px 20px rgba(0,0,0,0.4);
+      --shadow3:     0 12px 48px rgba(0,0,0,0.5);
+      /* Brand colours — dark mode: PDF=white, ly=green */
+      --brand-pdf: #FFFFFF;
+      --brand-ly:  #8AAB3A;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; height: 100%; }
+
+    body {
+      font-family: var(--font-b);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+      transition: background var(--tr), color var(--tr);
+      display: flex;
+      flex-direction: column;
+    }
+
+    img { display: block; max-width: 100%; }
+    button { font-family: var(--font-b); }
+    a { color: inherit; text-decoration: none; }
+
+    /* ============================================
+       NAVBAR
+    ============================================ */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow1);
+      width: 100%;
+      transition: background var(--tr), border-color var(--tr);
+    }
+
+    .navbar {
+      width: 100%;
+      padding: 0 32px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /*
+      nav-brand = <button> so it never triggers file picker or navigates.
+      Clicking it calls location.reload() via JS → goes to home page.
+    */
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      border-radius: var(--r-sm);
+      outline: none;
+      transition: opacity var(--tr);
+    }
+    .nav-brand:hover { opacity: 0.82; }
+    .nav-brand:focus-visible {
+      outline: 2px solid var(--olive);
+      outline-offset: 3px;
+    }
+
+    /* Logo image — loaded from images/logo.png */
+    .nav-logo-img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Fallback shown if logo.png fails to load */
+    .nav-logo-fallback {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--olive), var(--olive-light));
+      border-radius: 9px;
+      display: none;           /* shown by onerror JS */
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-h);
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.5px;
+      flex-shrink: 0;
+    }
+
+    /* Brand text: PDF part + ly part styled separately */
+    .nav-name {
+      font-family: var(--font-h);
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+
+    /* "PDF" — black in light mode, white in dark mode */
+    .brand-pdf {
+      color: var(--brand-pdf);
+      font-style: normal;
+      transition: color var(--tr);
+    }
+
+    /* "ly" — always olive/green, italic */
+    .brand-ly {
+      color: var(--brand-ly);
+      font-style: italic;
+      transition: color var(--tr);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chip-free {
+      background: var(--olive-xpale);
+      color: var(--olive);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--olive-pale);
+    }
+
+    .btn-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      transition: background var(--tr), transform var(--tr), border-color var(--tr);
+      outline: none;
+    }
+    .btn-icon:hover { background: var(--olive-pale); transform: rotate(18deg); border-color: var(--olive-pale); }
+
+    /* ============================================
+       MAIN
+    ============================================ */
+    main {
+      flex: 1;
+      width: 100%;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ============================================
+       HERO
+    ============================================ */
+    .hero {
+      width: 100%;
+      padding: 52px 32px 36px;
+      text-align: center;
+      background: transparent;
+    }
+
+    .hero h1 {
+      font-family: var(--font-h);
+      font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -1px;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--olive);
+    }
+
+    .hero p {
+      color: var(--text2);
+      font-size: 1rem;
+      font-weight: 400;
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ============================================
+       WORKSPACE
+    ============================================ */
+    .workspace {
+      flex: 1;
+      width: 100%;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .workspace > * { width: 100%; }
+
+    /* ============================================
+       DROP ZONE
+    ============================================ */
+    .drop-zone {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      border: 2px dashed var(--border);
+      border-radius: var(--r-xl);
+      background: var(--surface);
+      padding: 44px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color var(--tr), background var(--tr), box-shadow var(--tr), transform 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop-zone::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% -10%, rgba(107,142,35,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.drag-over {
+      border-color: var(--olive);
+      background: var(--olive-xpale);
+      box-shadow: var(--shadow2), 0 0 0 4px rgba(107,142,35,0.08);
+      transform: translateY(-2px);
+    }
+
+    .drop-zone.drag-over { border-style: solid; }
+
+    .dz-icon {
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 14px;
+      display: block;
+      transition: transform 0.3s ease;
+      filter: grayscale(0.2);
+    }
+    .drop-zone:hover .dz-icon,
+    .drop-zone.drag-over .dz-icon { transform: scale(1.12) translateY(-5px); }
+
+    .drop-zone h2 {
+      font-family: var(--font-h);
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .drop-zone > p {
+      color: var(--text3);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+
+    .btn-pick {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--olive);
+      color: #fff;
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 10px 24px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background var(--tr), transform var(--tr), box-shadow var(--tr);
+      box-shadow: 0 4px 16px rgba(92,122,31,0.28);
+      letter-spacing: 0.1px;
+    }
+    .btn-pick:hover { background: var(--olive-light); transform: translateY(-1px); box-shadow: 0 6px 22px rgba(92,122,31,0.38); }
+    .btn-pick:active { transform: translateY(0); }
+    #file-input { display: none; }
+
+    /* ============================================
+       STATS BAR
+    ============================================ */
+    .stats-bar {
+      display: flex;
+      align-items: stretch;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      overflow: hidden;
+      box-shadow: var(--shadow1);
+      transition: background var(--tr);
+    }
+    .stats-bar.hidden { display: none; }
+
+    .stat-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 12px 10px;
+      font-size: 0.83rem;
+      color: var(--text2);
+      border-right: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat-pill:last-child { border-right: none; }
+    .stat-pill strong { color: var(--text); font-weight: 700; }
+    .stat-pill .stat-icon { font-size: 15px; flex-shrink: 0; }
+
+    .drag-hint {
+      flex: 1;
+      font-size: 0.78rem;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 12px 10px;
+      border-left: 1px solid var(--border);
+    }
+
+    /* ============================================
+       PREVIEW GRID
+    ============================================ */
+    .preview-section { display: flex; flex-direction: column; gap: 16px; }
+    .preview-section.hidden { display: none; }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+
+    /* ============================================
+       IMAGE CARD
+    ============================================ */
+    .img-card {
+      background: var(--surface);
+      border-radius: var(--r-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow1);
+      transition: box-shadow var(--tr), transform var(--tr), border-color var(--tr);
+      position: relative;
+      cursor: grab;
+      user-select: none;
+    }
+    .img-card:hover { box-shadow: var(--shadow2); transform: translateY(-3px); border-color: var(--olive-pale); }
+    .img-card.sortable-ghost { opacity: 0.3; border: 2px dashed var(--olive); }
+    .img-card.sortable-chosen { cursor: grabbing; }
+    .img-card.sortable-drag { box-shadow: var(--shadow3); transform: rotate(1.5deg) scale(1.05); }
+
+    .card-thumb {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      background: var(--surface2);
+      display: block;
+    }
+
+    .card-footer { padding: 8px 10px 7px; }
+    .card-name { font-size: 0.75rem; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+    .card-size { font-size: 0.68rem; color: var(--text3); }
+
+    .card-page {
+      position: absolute;
+      top: 7px; left: 7px;
+      background: rgba(0,0,0,0.52);
+      backdrop-filter: blur(4px);
+      color: #fff;
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.3px;
+    }
+
+    .card-del {
+      position: absolute;
+      top: 7px; right: 7px;
+      width: 26px; height: 26px;
+      background: rgba(184,50,50,0.82);
+      backdrop-filter: blur(4px);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity var(--tr), background var(--tr), transform var(--tr);
+    }
+    .img-card:hover .card-del { opacity: 1; }
+    .card-del:hover { background: var(--red); transform: scale(1.1); }
+
+    /* ============================================
+       ACTION BUTTONS ROW
+    ============================================ */
+    .actions-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .actions-bar.hidden { display: none; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: none;
+      border-radius: var(--r-sm);
+      padding: 11px 24px;
+      font-family: var(--font-b);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background var(--tr), transform var(--tr), box-shadow var(--tr), opacity var(--tr), color var(--tr), border-color var(--tr);
+      letter-spacing: 0.1px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--olive);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(92,122,31,0.28);
+    }
+    .btn-primary:hover:not(:disabled) { background: var(--olive-light); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(92,122,31,0.38); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--text2);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--olive-xpale); color: var(--olive); border-color: var(--olive-pale); transform: translateY(-1px); }
+
+    .btn-danger {
+      background: var(--surface);
+      color: var(--text3);
+      border: 1px solid var(--border);
+    }
+    .btn-danger:hover { background: var(--red-pale); color: var(--red); border-color: var(--red); transform: translateY(-1px); }
+
+    .empty-hint {
+      text-align: center;
+      padding: 12px 0 32px;
+      color: var(--text3);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    /* ============================================
+       MODAL BASE
+    ============================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 16px;
+    }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow3);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: pop-in 0.28s cubic-bezier(0.34,1.56,0.64,1);
+      padding: 32px;
+    }
+
+    @keyframes pop-in {
+      from { transform: scale(0.88); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 12px;
+    }
+
+    .modal-title {
+      font-family: var(--font-h);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .modal-subtitle {
+      font-size: 0.82rem;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+
+    .modal-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: var(--text2);
+      flex-shrink: 0;
+      transition: background var(--tr), color var(--tr);
+    }
+    .modal-close:hover { background: var(--red-pale); color: var(--red); border-color: var(--red); }
+
+    /* ============================================
+       FORM ELEMENTS
+    ============================================ */
+    .form-group { margin-bottom: 20px; }
+
+    .form-label {
+      display: block;
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 7px;
+      letter-spacing: 0.1px;
+    }
+
+    .form-label span {
+      font-weight: 400;
+      color: var(--text3);
+      margin-left: 4px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: var(--font-b);
+      font-size: 0.9rem;
+      transition: border-color var(--tr), box-shadow var(--tr), background var(--tr);
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(107,142,35,0.15); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--surface2);
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+    }
+
+    .toggle-label { font-size: 0.87rem; font-weight: 600; color: var(--text); }
+    .toggle-desc  { font-size: 0.75rem; color: var(--text3); margin-top: 1px; }
+
+    .switch {
+      position: relative;
+      width: 42px; height: 24px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 99px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .switch-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .switch input:checked + .switch-slider { background: var(--olive); }
+    .switch input:checked + .switch-slider::before { transform: translateX(18px); }
+
+    .range-wrap { display: flex; align-items: center; gap: 10px; }
+    .range-val {
+      min-width: 34px;
+      text-align: right;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--olive);
+    }
+    input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 5px;
+      border-radius: 99px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--olive);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    .tab-row {
+      display: flex;
+      gap: 0;
+      background: var(--surface2);
+      border-radius: var(--r-sm);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 9px 0;
+      border: none;
+      background: transparent;
+      font-family: var(--font-b);
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: var(--text2);
+      cursor: pointer;
+      transition: background var(--tr), color var(--tr);
+    }
+    .tab-btn.active { background: var(--olive); color: #fff; }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0 16px;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .section-divider span {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text3);
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .modal-footer .btn { flex: 1; justify-content: center; }
+
+    /* ============================================
+       PROGRESS OVERLAY
+    ============================================ */
+    .progress-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      padding: 16px;
+    }
+    .progress-overlay.active { opacity: 1; pointer-events: all; }
+
+    .progress-card {
+      background: var(--surface);
+      border-radius: var(--r-xl);
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: var(--shadow3);
+      min-width: 300px;
+      max-width: 90vw;
+      border: 1px solid var(--border);
+      animation: pop-in 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .progress-spinner {
+      width: 52px; height: 52px;
+      margin: 0 auto 18px;
+      border: 4px solid var(--border);
+      border-top-color: var(--olive);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .progress-title {
+      font-family: var(--font-h);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .progress-step {
+      font-size: 0.83rem;
+      color: var(--text3);
+      margin-bottom: 20px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--olive), var(--olive-light));
+      border-radius: 99px;
+      transition: width 0.35s cubic-bezier(.4,0,.2,1);
+    }
+    .progress-pct {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--olive);
+    }
+
+    /* ============================================
+       TOAST
+    ============================================ */
+    .toast-wrap {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-md);
+      padding: 12px 18px;
+      box-shadow: var(--shadow2);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 200px;
+      max-width: 320px;
+      pointer-events: all;
+      animation: toast-in 0.28s cubic-bezier(0.34,1.56,0.64,1);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    @keyframes toast-in {
+      from { transform: translateX(32px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    .toast.out { opacity: 0; transform: translateX(32px); }
+    .toast.success { border-left: 3px solid var(--olive); }
+    .toast.error   { border-left: 3px solid var(--red); }
+    .toast.info    { border-left: 3px solid #4A90D9; }
+
+    /* ============================================
+       FOOTER — slim
+    ============================================ */
+    footer {
+      width: 100%;
+      border-top: 1px solid var(--border);
+      padding: 12px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      transition: background var(--tr), border-color var(--tr);
+    }
+
+    .footer-text {
+      font-size: 0.76rem;
+      color: var(--text3);
+    }
+    .footer-text a { color: var(--olive); }
+    .footer-text a:hover { text-decoration: underline; }
+
+    /* ============================================
+       RESPONSIVE
+    ============================================ */
+    @media (max-width: 640px) {
+      .navbar { padding: 0 16px; height: 54px; }
+      .hero { padding: 32px 16px 24px; }
+      .workspace { padding: 20px 16px; gap: 16px; }
+      .drop-zone { padding: 36px 18px; border-radius: var(--r-lg); }
+      .drop-zone h2 { font-size: 1.1rem; }
+      .preview-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+      .actions-bar { flex-direction: column; align-items: center; }
+      .actions-bar .btn { justify-content: center; width: 100%; max-width: 300px; }
+      .form-row { grid-template-columns: 1fr; }
+      .modal { padding: 22px 18px; border-radius: var(--r-lg); }
+      .progress-card { padding: 28px 24px; }
+      .toast-wrap { right: 12px; bottom: 12px; left: 12px; }
+      .toast { max-width: 100%; }
+      .stat-pill { padding: 8px 6px; font-size: 0.75rem; }
+      .drag-hint { font-size: 0.72rem; padding: 8px 6px; }
+      .chip-free { display: none; }
+      footer { padding: 10px 16px; }
+    }
+
+    /* ============================================
+       UTILS
+    ============================================ */
+    .hidden { display: none !important; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--olive-pale); }
+
+    #wm-img-preview {
+      width: 100%;
+      aspect-ratio: 2/1;
+      object-fit: contain;
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      background: var(--surface2);
+      display: none;
+      margin-top: 8px;
+    }
+    #wm-img-input { display: none; }
+    .btn-upload-wm {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border: 1.5px dashed var(--border);
+      border-radius: var(--r-sm);
+      background: var(--surface2);
+      color: var(--text2);
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      transition: border-color var(--tr), background var(--tr), color var(--tr);
+    }
+    .btn-upload-wm:hover { border-color: var(--olive); background: var(--olive-xpale); color: var(--olive); }
+  </style>
+</head>
+<body>
+
+<!-- ==========================================
+     NAVBAR
+=========================================== -->
+<header>
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+
+    <!--
+      nav-brand is a <button type="button"> — NOT an <a> tag.
+      This means clicking it NEVER opens a file picker and NEVER
+      triggers any browser file-open dialog.
+      The JS below handles click → window.location.href = '/' (home page reload).
+    -->
+    <button
+      class="nav-brand"
+      id="nav-brand"
+      type="button"
+      aria-label="PDFly — Click to go to home page"
+      title="Go to home page"
+    >
+      <!-- Logo loaded from images/logo.png -->
+      <img
+        id="nav-logo"
+        src="images/logo.png"
+        alt="PDFly logo"
+        class="nav-logo-img"
+        onerror="this.style.display='none'; document.getElementById('nav-logo-fb').style.display='flex';"
+      />
+      <!-- Fallback if logo.png is missing -->
+      <div class="nav-logo-fallback" id="nav-logo-fb" aria-hidden="true">Pf</div>
+
+      <!-- Brand text: PDF=dark(light)/white(dark)  ly=green always -->
+      <span class="nav-name" aria-label="PDFly">
+        <span class="brand-pdf">PDF</span><span class="brand-ly">ly</span>
+      </span>
+    </button>
+
+    <div class="nav-right">
+      <span class="chip-free">100% Free</span>
+      <button class="btn-icon" id="dark-toggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">🌙</button>
+    </div>
+  </nav>
+</header>
+
+<!-- ==========================================
+     HERO
+=========================================== -->
+<section class="hero" aria-labelledby="hero-h1">
+  <h1 id="hero-h1">Convert <em>Images</em> to PDF<br>Instantly &amp; Free</h1>
+  <p>Drag &amp; drop images, reorder pages, add watermarks, set passwords — download your perfect PDF in seconds.</p>
+</section>
+
+<!-- ==========================================
+     MAIN
+=========================================== -->
+<main id="main">
+  <div class="workspace">
+
+    <!-- Drop Zone -->
+    <section aria-labelledby="upload-h2">
+      <h2 id="upload-h2" class="visually-hidden">Upload Images</h2>
+      <div
+        class="drop-zone"
+        id="drop-zone"
+        role="button"
+        tabindex="0"
+        aria-label="Drop images here or click to choose files"
+      >
+        <span class="dz-icon" aria-hidden="true">📁</span>
+        <h2>Drop images here</h2>
+        <p>JPG, PNG, WEBP, GIF, BMP &bull; Unlimited images</p>
+        <button class="btn-pick" id="btn-pick" type="button" aria-label="Open file picker">
+          <span aria-hidden="true">＋</span> Choose Files
+        </button>
+        <input type="file" id="file-input" accept="image/*" multiple aria-label="File upload input" />
+      </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar hidden" id="stats-bar" role="status" aria-live="polite">
+      <div class="stat-pill">
+        <span class="stat-icon" aria-hidden="true">🖼️</span>
+        <span><strong id="stat-count">0</strong> images</span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-icon" aria-hidden="true">⚖️</span>
+        <span>Size: <strong id="stat-size">—</strong></span>
+      </div>
+      <div class="stat-pill">
+        <span class="stat-icon" aria-hidden="true">📄</span>
+        <span><strong id="stat-pages">0</strong> pages</span>
+      </div>
+      <div class="drag-hint" aria-hidden="true">
+        <span>⠿</span> Drag cards to reorder
+      </div>
+    </div>
+
+    <!-- Preview Grid -->
+    <section class="preview-section hidden" id="preview-section" aria-label="Uploaded images preview">
+      <div class="preview-grid" id="preview-grid" role="list"></div>
+    </section>
+
+    <!-- Actions -->
+    <div class="actions-bar hidden" id="actions-bar">
+      <button class="btn btn-primary" id="btn-generate" type="button">
+        <span aria-hidden="true">📥</span> Download PDF
+      </button>
+      <button class="btn btn-ghost" id="btn-add-more" type="button">
+        <span aria-hidden="true">＋</span> Add More
+      </button>
+      <button class="btn btn-danger" id="btn-clear" type="button">
+        <span aria-hidden="true">🗑</span> Clear All
+      </button>
+    </div>
+
+    <p class="empty-hint" id="empty-hint" aria-live="polite">
+      <span aria-hidden="true">☝️</span> Upload images above to get started
+    </p>
+
+  </div>
+</main>
+
+<!-- ==========================================
+     FOOTER
+=========================================== -->
+<footer>
+  <p class="footer-text">
+    Made with ❤️ by
+    <a href="https://obaidshaikh.vercel.app/" target="_blank" rel="noopener" aria-label="OBAIDULLAH SHAIKH portfolio">
+      OBAIDULLAH SHAIKH
+    </a>
+    &bull; Free forever
+  </p>
+</footer>
+
+<!-- ==========================================
+     DOWNLOAD OPTIONS MODAL
+=========================================== -->
+<div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal" role="document">
+
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">⚙️ PDF Options</div>
+        <div class="modal-subtitle">Customize your PDF before downloading</div>
+      </div>
+      <button class="modal-close" id="modal-close" type="button" aria-label="Close">✕</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="pdf-filename">File Name <span>(without .pdf)</span></label>
+      <input class="form-input" type="text" id="pdf-filename" value="PDFly" placeholder="Enter file name" aria-label="PDF file name" />
+    </div>
+
+    <div class="section-divider"><span>Watermark</span></div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Add Watermark</div>
+        <div class="toggle-desc">Stamp a watermark on every page</div>
+      </div>
+      <label class="switch" aria-label="Enable watermark">
+        <input type="checkbox" id="wm-enabled" checked />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <div id="wm-settings">
+      <div class="tab-row" role="tablist" aria-label="Watermark type">
+        <button class="tab-btn active" id="tab-text" role="tab" aria-selected="true" type="button">Text</button>
+        <button class="tab-btn" id="tab-image" role="tab" aria-selected="false" type="button">Image</button>
+      </div>
+
+      <div id="wm-text-panel">
+        <div class="form-group">
+          <label class="form-label" for="wm-text">Watermark Text</label>
+          <input class="form-input" type="text" id="wm-text" value="PDFly" placeholder="Enter watermark text" maxlength="60" />
+        </div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="wm-font-size">Font Size</label>
+            <div class="range-wrap">
+              <input type="range" id="wm-font-size" min="10" max="120" value="48" step="2" aria-label="Watermark font size" />
+              <span class="range-val" id="wm-font-size-val">48</span>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="wm-color">Color</label>
+            <input class="form-input" type="color" id="wm-color" value="#6B8E23" style="height:40px;padding:4px 8px;cursor:pointer;" aria-label="Watermark color" />
+          </div>
+        </div>
+      </div>
+
+      <div id="wm-image-panel" class="hidden">
+        <div class="form-group">
+          <label class="form-label">Watermark Image</label>
+          <button class="btn-upload-wm" id="btn-wm-img" type="button">
+            <span aria-hidden="true">🖼️</span> Upload Watermark Image
+          </button>
+          <input type="file" id="wm-img-input" accept="image/*" aria-label="Watermark image upload" />
+          <img id="wm-img-preview" alt="Watermark image preview" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="wm-opacity">Opacity <span>(transparency)</span></label>
+        <div class="range-wrap">
+          <input type="range" id="wm-opacity" min="1" max="100" value="20" aria-label="Watermark opacity" />
+          <span class="range-val" id="wm-opacity-val">20%</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="wm-position">Position</label>
+        <select class="form-input" id="wm-position" aria-label="Watermark position">
+          <option value="center">Center (diagonal)</option>
+          <option value="top-left">Top Left</option>
+          <option value="top-right">Top Right</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="bottom-right">Bottom Right</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>Security</span></div>
+
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Password Protect</div>
+        <div class="toggle-desc">Require a password to open this PDF</div>
+      </div>
+      <label class="switch" aria-label="Enable password protection">
+        <input type="checkbox" id="pwd-enabled" />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <div id="pwd-settings" class="hidden">
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="pdf-password">Password</label>
+          <input class="form-input" type="password" id="pdf-password" placeholder="Enter password" autocomplete="new-password" />
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" for="pdf-password2">Confirm Password</label>
+          <input class="form-input" type="password" id="pdf-password2" placeholder="Repeat password" autocomplete="new-password" />
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text3);margin-top:8px;">⚠️ Note: PDF password protection is applied via file metadata. For strong encryption use a dedicated tool.</p>
+    </div>
+
+    <div class="toggle-row" style="margin-top:10px;">
+      <div>
+        <div class="toggle-label">Allow Text Copy</div>
+        <div class="toggle-desc">Let readers copy text from PDF content</div>
+      </div>
+      <label class="switch" aria-label="Allow text copy">
+        <input type="checkbox" id="copy-enabled" checked />
+        <span class="switch-slider"></span>
+      </label>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="modal-cancel" type="button">Cancel</button>
+      <button class="btn btn-primary" id="modal-confirm" type="button">
+        <span aria-hidden="true">📥</span> Download PDF
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==========================================
+     PROGRESS OVERLAY
+=========================================== -->
+<div class="progress-overlay" id="progress-overlay" role="dialog" aria-modal="true" aria-labelledby="prog-title">
+  <div class="progress-card">
+    <div class="progress-spinner" aria-hidden="true"></div>
+    <div class="progress-title" id="prog-title">Building your PDF…</div>
+    <div class="progress-step" id="prog-step">Starting…</div>
+    <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="prog-track">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+    <div class="progress-pct" id="prog-pct">0%</div>
+  </div>
+</div>
+
+<!-- ==========================================
+     TOAST
+=========================================== -->
+<div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+<!-- ==========================================
+     JAVASCRIPT
+=========================================== -->
+<script>
+/* =============================================
+   STATE
+============================================= */
+const state = {
+  images: [],
+  nextId: 1,
+  wmImgDataURL: null,
+};
+
+/* =============================================
+   DARK MODE
+============================================= */
+const darkBtn = document.getElementById('dark-toggle');
+const saved = localStorage.getItem('pdfly-dark');
+let dark = saved !== null ? saved === '1' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+function applyTheme() {
+  document.body.dataset.theme = dark ? 'dark' : 'light';
+  darkBtn.textContent = dark ? '☀️' : '🌙';
+  darkBtn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+darkBtn.addEventListener('click', () => {
+  dark = !dark;
+  localStorage.setItem('pdfly-dark', dark ? '1' : '0');
+  applyTheme();
+});
+applyTheme();
+
+/* =============================================
+   LOGO / BRAND NAME CLICK → HOME PAGE
+   Uses window.location.pathname to reload
+   index page cleanly without extra params.
+   Does NOT open file picker. Does NOT navigate away.
+============================================= */
+document.getElementById('nav-brand').addEventListener('click', function () {
+  window.location.href = window.location.pathname;
+});
+
+/* =============================================
+   ELEMENT REFS
+============================================= */
+const dropZone       = document.getElementById('drop-zone');
+const fileInput      = document.getElementById('file-input');
+const btnPick        = document.getElementById('btn-pick');
+const btnGenerate    = document.getElementById('btn-generate');
+const btnAddMore     = document.getElementById('btn-add-more');
+const btnClear       = document.getElementById('btn-clear');
+const previewGrid    = document.getElementById('preview-grid');
+const previewSection = document.getElementById('preview-section');
+const actionsBar     = document.getElementById('actions-bar');
+const statsBar       = document.getElementById('stats-bar');
+const statCount      = document.getElementById('stat-count');
+const statSize       = document.getElementById('stat-size');
+const statPages      = document.getElementById('stat-pages');
+const emptyHint      = document.getElementById('empty-hint');
+const modalOverlay   = document.getElementById('modal-overlay');
+const modalClose     = document.getElementById('modal-close');
+const modalCancel    = document.getElementById('modal-cancel');
+const modalConfirm   = document.getElementById('modal-confirm');
+const progOverlay    = document.getElementById('progress-overlay');
+const progFill       = document.getElementById('prog-fill');
+const progPct        = document.getElementById('prog-pct');
+const progStep       = document.getElementById('prog-step');
+const progTrack      = document.getElementById('prog-track');
+const pdfFilename    = document.getElementById('pdf-filename');
+const wmEnabled      = document.getElementById('wm-enabled');
+const wmSettings     = document.getElementById('wm-settings');
+const tabText        = document.getElementById('tab-text');
+const tabImage       = document.getElementById('tab-image');
+const wmTextPanel    = document.getElementById('wm-text-panel');
+const wmImagePanel   = document.getElementById('wm-image-panel');
+const wmText         = document.getElementById('wm-text');
+const wmFontSize     = document.getElementById('wm-font-size');
+const wmFontSizeVal  = document.getElementById('wm-font-size-val');
+const wmColor        = document.getElementById('wm-color');
+const wmOpacity      = document.getElementById('wm-opacity');
+const wmOpacityVal   = document.getElementById('wm-opacity-val');
+const wmPosition     = document.getElementById('wm-position');
+const pwdEnabled     = document.getElementById('pwd-enabled');
+const pwdSettings    = document.getElementById('pwd-settings');
+const pdfPassword    = document.getElementById('pdf-password');
+const pdfPassword2   = document.getElementById('pdf-password2');
+const copyEnabled    = document.getElementById('copy-enabled');
+const btnWmImg       = document.getElementById('btn-wm-img');
+const wmImgInput     = document.getElementById('wm-img-input');
+const wmImgPreview   = document.getElementById('wm-img-preview');
+const toastWrap      = document.getElementById('toast-wrap');
+
+/* =============================================
+   UTILS
+============================================= */
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(2) + ' MB';
+}
+
+function readAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => res(e.target.result);
+    r.onerror = () => rej();
+    r.readAsDataURL(file);
+  });
+}
+
+function compressImage(src, maxW = 1920, maxH = 1920, q = 0.82) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      let { width: w, height: h } = img;
+      const ratio = Math.min(maxW / w, maxH / h, 1);
+      w = Math.round(w * ratio);
+      h = Math.round(h * ratio);
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      res(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = () => res(src);
+    img.src = src;
+  });
+}
+
+function getImgDims(src) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => res({ w: img.naturalWidth, h: img.naturalHeight });
+    img.onerror = () => res({ w: 800, h: 600 });
+    img.src = src;
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* =============================================
+   TOAST
+============================================= */
+function toast(msg, type = 'info', dur = 3200) {
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span aria-hidden="true">${icons[type]}</span><span>${msg}</span>`;
+  toastWrap.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 260);
+  }, dur);
+}
+
+/* =============================================
+   PROGRESS
+============================================= */
+function showProg(step = 'Starting…') {
+  progFill.style.width = '0%';
+  progPct.textContent = '0%';
+  progStep.textContent = step;
+  progTrack.setAttribute('aria-valuenow', 0);
+  progOverlay.classList.add('active');
+}
+
+function setProg(pct, step) {
+  const v = Math.min(100, Math.max(0, pct));
+  progFill.style.width = v + '%';
+  progPct.textContent = Math.round(v) + '%';
+  progTrack.setAttribute('aria-valuenow', Math.round(v));
+  if (step) progStep.textContent = step;
+}
+
+function hideProg() { progOverlay.classList.remove('active'); }
+
+/* =============================================
+   UI RENDER
+============================================= */
+function renderStats() {
+  const n = state.images.length;
+  const total = state.images.reduce((s, i) => s + i.size, 0);
+
+  if (n === 0) {
+    statsBar.classList.add('hidden');
+    previewSection.classList.add('hidden');
+    actionsBar.classList.add('hidden');
+    emptyHint.removeAttribute('aria-hidden');
+  } else {
+    statsBar.classList.remove('hidden');
+    previewSection.classList.remove('hidden');
+    actionsBar.classList.remove('hidden');
+    emptyHint.setAttribute('aria-hidden', 'true');
+  }
+
+  statCount.textContent = n;
+  statSize.textContent  = n ? formatBytes(total) : '—';
+  statPages.textContent = n;
+}
+
+function createCard(entry, idx) {
+  const { id, dataURL, name, size } = entry;
+
+  const card = document.createElement('div');
+  card.className = 'img-card';
+  card.dataset.id = id;
+  card.setAttribute('role', 'listitem');
+
+  const badge = document.createElement('span');
+  badge.className = 'card-page';
+  badge.textContent = `P${idx + 1}`;
+  badge.setAttribute('aria-hidden', 'true');
+
+  const thumb = document.createElement('img');
+  thumb.className = 'card-thumb';
+  thumb.src = dataURL;
+  thumb.alt = name;
+  thumb.loading = 'lazy';
+
+  const footer = document.createElement('div');
+  footer.className = 'card-footer';
+
+  const nm = document.createElement('div');
+  nm.className = 'card-name';
+  nm.textContent = name;
+  nm.title = name;
+
+  const sz = document.createElement('div');
+  sz.className = 'card-size';
+  sz.textContent = formatBytes(size);
+
+  const del = document.createElement('button');
+  del.className = 'card-del';
+  del.innerHTML = '✕';
+  del.type = 'button';
+  del.setAttribute('aria-label', `Remove ${name}`);
+  del.addEventListener('click', e => { e.stopPropagation(); removeImage(id); });
+
+  footer.appendChild(nm);
+  footer.appendChild(sz);
+  card.appendChild(badge);
+  card.appendChild(thumb);
+  card.appendChild(footer);
+  card.appendChild(del);
+  return card;
+}
+
+function renderGrid() {
+  previewGrid.innerHTML = '';
+  state.images.forEach((img, idx) => previewGrid.appendChild(createCard(img, idx)));
+  renderStats();
+}
+
+function updateBadges() {
+  previewGrid.querySelectorAll('.img-card').forEach((card, idx) => {
+    const b = card.querySelector('.card-page');
+    if (b) b.textContent = `P${idx + 1}`;
+  });
+}
+
+/* =============================================
+   SORTABLE
+============================================= */
+let sortable = null;
+function initSortable() {
+  if (sortable) { sortable.destroy(); sortable = null; }
+  if (!state.images.length) return;
+  sortable = Sortable.create(previewGrid, {
+    animation: 200,
+    ghostClass: 'sortable-ghost',
+    chosenClass: 'sortable-chosen',
+    dragClass: 'sortable-drag',
+    onEnd() {
+      const cards = previewGrid.querySelectorAll('.img-card');
+      const newOrder = [];
+      cards.forEach(c => {
+        const found = state.images.find(i => i.id === +c.dataset.id);
+        if (found) newOrder.push(found);
+      });
+      state.images = newOrder;
+      updateBadges();
+    }
+  });
+}
+
+/* =============================================
+   ADD FILES
+============================================= */
+async function addFiles(files) {
+  const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
+  if (!valid.length) { toast('Only image files are accepted.', 'error'); return; }
+
+  toast(`Loading ${valid.length} image${valid.length > 1 ? 's' : ''}…`, 'info', 2000);
+
+  for (const file of valid) {
+    try {
+      const raw = await readAsDataURL(file);
+      const compressed = await compressImage(raw);
+      state.images.push({ id: state.nextId++, dataURL: compressed, name: file.name, size: file.size });
+    } catch { toast(`Failed to load: ${file.name}`, 'error'); }
+  }
+
+  renderGrid();
+  initSortable();
+  toast(`${valid.length} image${valid.length > 1 ? 's' : ''} added!`, 'success');
+}
+
+/* =============================================
+   REMOVE / CLEAR
+============================================= */
+function removeImage(id) {
+  state.images = state.images.filter(i => i.id !== id);
+  renderGrid();
+  initSortable();
+}
+
+function clearAll() {
+  if (!state.images.length) return;
+  state.images = [];
+  state.wmImgDataURL = null;
+  renderGrid();
+  toast('All images cleared.', 'info');
+}
+
+/* =============================================
+   DROP ZONE EVENTS
+============================================= */
+dropZone.addEventListener('click', e => {
+  if (!e.target.closest('#btn-pick')) fileInput.click();
+});
+dropZone.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+});
+btnPick.addEventListener('click', e => { e.stopPropagation(); fileInput.click(); });
+btnAddMore.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', e => {
+  if (e.target.files?.length) { addFiles(e.target.files); fileInput.value = ''; }
+});
+
+['dragenter', 'dragover'].forEach(ev => {
+  dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dropZone.classList.add('drag-over'); });
+});
+['dragleave', 'dragend'].forEach(ev => {
+  dropZone.addEventListener(ev, e => { if (!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('drag-over'); });
+});
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); e.stopPropagation();
+  dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+});
+document.body.addEventListener('dragover', e => e.preventDefault());
+document.body.addEventListener('drop', e => {
+  e.preventDefault();
+  if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
+});
+
+btnClear.addEventListener('click', () => { if (confirm('Clear all images?')) clearAll(); });
+
+/* =============================================
+   MODAL CONTROLS
+============================================= */
+function openModal() {
+  if (!pdfFilename.value.trim()) pdfFilename.value = 'PDFly';
+  modalOverlay.classList.add('active');
+  setTimeout(() => pdfFilename.focus(), 100);
+}
+
+function closeModal() { modalOverlay.classList.remove('active'); }
+
+btnGenerate.addEventListener('click', () => {
+  if (!state.images.length) { toast('Upload at least one image.', 'error'); return; }
+  openModal();
+});
+
+modalClose.addEventListener('click', closeModal);
+modalCancel.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+
+/* Watermark toggle */
+wmEnabled.addEventListener('change', () => {
+  wmSettings.style.display = wmEnabled.checked ? '' : 'none';
+});
+wmSettings.style.display = '';
+
+/* Watermark type tabs */
+tabText.addEventListener('click', () => {
+  tabText.classList.add('active');     tabText.setAttribute('aria-selected', 'true');
+  tabImage.classList.remove('active'); tabImage.setAttribute('aria-selected', 'false');
+  wmTextPanel.classList.remove('hidden');
+  wmImagePanel.classList.add('hidden');
+});
+tabImage.addEventListener('click', () => {
+  tabImage.classList.add('active');   tabImage.setAttribute('aria-selected', 'true');
+  tabText.classList.remove('active'); tabText.setAttribute('aria-selected', 'false');
+  wmImagePanel.classList.remove('hidden');
+  wmTextPanel.classList.add('hidden');
+});
+
+/* Range sliders */
+wmFontSize.addEventListener('input', () => wmFontSizeVal.textContent = wmFontSize.value);
+wmOpacity.addEventListener('input', () => wmOpacityVal.textContent = wmOpacity.value + '%');
+
+/* Password toggle */
+pwdEnabled.addEventListener('change', () => {
+  pwdSettings.classList.toggle('hidden', !pwdEnabled.checked);
+});
+
+/* Watermark image upload */
+btnWmImg.addEventListener('click', () => wmImgInput.click());
+wmImgInput.addEventListener('change', async e => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const src = await readAsDataURL(file);
+  state.wmImgDataURL = src;
+  wmImgPreview.src = src;
+  wmImgPreview.style.display = 'block';
+  wmImgInput.value = '';
+});
+
+/* =============================================
+   WATERMARK DRAWING
+============================================= */
+async function drawWatermark(ctx, w, h, opts) {
+  const { type, text, fontSize, color, opacity, position, wmImgSrc } = opts;
+
+  ctx.save();
+  ctx.globalAlpha = opacity / 100;
+
+  if (type === 'text') {
+    ctx.fillStyle = color;
+    const fs = Math.max(8, Math.round((fontSize / 210) * w));
+    ctx.font = `bold ${fs}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    let x = w / 2, y = h / 2, rot = 0;
+    if (position === 'center') {
+      rot = -Math.PI / 6;
+    } else {
+      const pad = fs * 1.2;
+      if (position === 'top-left')     { x = pad; y = pad; ctx.textAlign = 'left'; ctx.textBaseline = 'top'; }
+      if (position === 'top-right')    { x = w - pad; y = pad; ctx.textAlign = 'right'; ctx.textBaseline = 'top'; }
+      if (position === 'bottom-left')  { x = pad; y = h - pad; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom'; }
+      if (position === 'bottom-right') { x = w - pad; y = h - pad; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; }
+    }
+
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.fillText(text, 0, 0);
+
+  } else if (type === 'image' && wmImgSrc) {
+    await new Promise(res => {
+      const img = new Image();
+      img.onload = () => {
+        let iw = img.width, ih = img.height;
+        const scale = (w * 0.4) / iw;
+        iw = iw * scale; ih = ih * scale;
+
+        let x = 0, y = 0;
+        if (position === 'center')           { x = (w - iw) / 2; y = (h - ih) / 2; }
+        else if (position === 'top-left')    { x = 10; y = 10; }
+        else if (position === 'top-right')   { x = w - iw - 10; y = 10; }
+        else if (position === 'bottom-left') { x = 10; y = h - ih - 10; }
+        else if (position === 'bottom-right'){ x = w - iw - 10; y = h - ih - 10; }
+
+        ctx.drawImage(img, x, y, iw, ih);
+        res();
+      };
+      img.onerror = res;
+      img.src = wmImgSrc;
+    });
+  }
+
+  ctx.restore();
+}
+
+/* =============================================
+   PDF GENERATION
+============================================= */
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  if (!jsPDF) { toast('PDF library not loaded. Please refresh.', 'error'); return; }
+
+  const filename  = (pdfFilename.value.trim() || 'PDFly').replace(/\.pdf$/i, '');
+  const useWm     = wmEnabled.checked;
+  const wmType    = tabText.classList.contains('active') ? 'text' : 'image';
+  const wmTxt     = wmText.value.trim() || 'PDFly';
+  const wmFs      = parseInt(wmFontSize.value);
+  const wmCol     = wmColor.value;
+  const wmOp      = parseInt(wmOpacity.value);
+  const wmPos     = wmPosition.value;
+  const usePwd    = pwdEnabled.checked;
+  const pwd       = pdfPassword.value;
+  const pwd2      = pdfPassword2.value;
+  const allowCopy = copyEnabled.checked;
+
+  if (usePwd) {
+    if (!pwd) { toast('Please enter a password.', 'error'); return; }
+    if (pwd !== pwd2) { toast('Passwords do not match.', 'error'); return; }
+  }
+
+  if (useWm && wmType === 'image' && !state.wmImgDataURL) {
+    toast('Please upload a watermark image first.', 'error'); return;
+  }
+
+  closeModal();
+  await sleep(80);
+
+  const orderedIds = Array.from(previewGrid.querySelectorAll('.img-card')).map(c => +c.dataset.id);
+  const imgs = orderedIds.map(id => state.images.find(i => i.id === id)).filter(Boolean);
+
+  if (!imgs.length) { toast('No images to process.', 'error'); return; }
+
+  btnGenerate.disabled = true;
+  showProg('Preparing images…');
+
+  try {
+    let pdf = null;
+
+    for (let i = 0; i < imgs.length; i++) {
+      const entry = imgs[i];
+      setProg((i / imgs.length) * 90, `Processing page ${i + 1} of ${imgs.length}…`);
+      await sleep(15);
+
+      const dims = await getImgDims(entry.dataURL);
+      const landscape = dims.w > dims.h;
+      const pdfW = landscape ? 297 : 210;
+      const pdfH = landscape ? 210 : 297;
+
+      if (i === 0) {
+        pdf = new jsPDF({
+          orientation: landscape ? 'landscape' : 'portrait',
+          unit: 'mm',
+          format: [pdfW, pdfH],
+          encryption: usePwd ? {
+            userPassword: pwd,
+            ownerPassword: pwd + '_owner',
+            userPermissions: allowCopy
+              ? ['print', 'modify', 'copy', 'annot-forms']
+              : ['print', 'modify', 'annot-forms'],
+          } : undefined,
+        });
+      } else {
+        pdf.addPage([pdfW, pdfH], landscape ? 'landscape' : 'portrait');
+      }
+
+      const m = 6;
+      const maxW = pdfW - m * 2, maxH = pdfH - m * 2;
+      const ratio = Math.min(maxW / dims.w, maxH / dims.h);
+      const iW = dims.w * ratio, iH = dims.h * ratio;
+      const ox = m + (maxW - iW) / 2, oy = m + (maxH - iH) / 2;
+      const fmt = entry.dataURL.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      pdf.addImage(entry.dataURL, fmt, ox, oy, iW, iH);
+
+      if (useWm) {
+        const PX_PER_MM = 3.7795275591;
+        const cw = Math.round(pdfW * PX_PER_MM);
+        const ch = Math.round(pdfH * PX_PER_MM);
+        const canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        const ctx = canvas.getContext('2d');
+
+        await drawWatermark(ctx, cw, ch, {
+          type: wmType,
+          text: wmTxt,
+          fontSize: wmFs,
+          color: wmCol,
+          opacity: wmOp,
+          position: wmPos,
+          wmImgSrc: state.wmImgDataURL,
+        });
+
+        const wmDataURL = canvas.toDataURL('image/png');
+        pdf.addImage(wmDataURL, 'PNG', 0, 0, pdfW, pdfH);
+      }
+    }
+
+    setProg(97, 'Finalizing…');
+    await sleep(100);
+
+    pdf.save(`${filename}.pdf`);
+
+    setProg(100, 'Done! 🎉');
+    await sleep(700);
+    hideProg();
+    toast(`${filename}.pdf downloaded!`, 'success', 4500);
+
+  } catch (err) {
+    console.error(err);
+    hideProg();
+    toast('Failed to generate PDF. Please try again.', 'error');
+  } finally {
+    btnGenerate.disabled = false;
+  }
+}
+
+modalConfirm.addEventListener('click', generatePDF);
+
+/* =============================================
+   KEYBOARD ACCESSIBILITY
+============================================= */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && modalOverlay.classList.contains('active')) closeModal();
+});
+
+/* =============================================
+   INITIAL RENDER
+============================================= */
+renderStats();
+</script>
+
+</body>
+</html>
