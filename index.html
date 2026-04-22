@@ -8,7 +8,7 @@
   <meta name="keywords" content="PDFly, image to PDF, free PDF maker, convert images to PDF, PDF creator online, add watermark PDF, password protect PDF, JPG to PDF, PNG to PDF" />
   <meta name="author" content="PDFly" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://pdfly.vercel.app/" />
+  <link rel="canonical" href="https://pdfly-web.vercel.app/" />
 
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#5C7A1F">
@@ -20,7 +20,7 @@
   <meta property="og:description" content="Drag, drop, reorder, watermark and download PDFs in seconds. No signup required." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="images/logo.png" />
-  <meta property="og:url" content="https://pdfly.vercel.app/" />
+  <meta property="og:url" content="https://pdfly-web.vercel.app/" />
   <meta property="og:site_name" content="PDFly" />
 
   <!-- Twitter Card -->
@@ -621,6 +621,33 @@
     }
     .form-input:focus { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(107,142,35,0.15); }
 
+    /* Password field with eye button */
+    .password-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .password-wrapper .form-input {
+      padding-right: 45px;
+    }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0;
+      color: var(--text2);
+      transition: color var(--tr);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .password-toggle:hover {
+      color: var(--olive);
+    }
+
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -962,7 +989,7 @@
       <div class="drop-zone" id="drop-zone" role="button" tabindex="0" aria-label="Drop images here or click to choose files">
         <span class="dz-icon" aria-hidden="true">📁</span>
         <h2>Drop images here</h2>
-        <p>JPG, PNG, WEBP, GIF, BMP  </p>
+        <p>JPG, PNG, WEBP, GIF, BMP </p>
         <button class="btn-pick" id="btn-pick" type="button" aria-label="Open file picker">
           <span aria-hidden="true">＋</span> Choose Files
         </button>
@@ -1083,6 +1110,13 @@
           <input type="file" id="wm-img-input" accept="image/*" aria-label="Watermark image upload" />
           <img id="wm-img-preview" alt="Watermark image preview" />
         </div>
+        <div class="form-group">
+          <label class="form-label" for="wm-img-size">Image Size <span>(percentage of page)</span></label>
+          <div class="range-wrap">
+            <input type="range" id="wm-img-size" min="10" max="80" value="40" step="2" aria-label="Watermark image size" />
+            <span class="range-val" id="wm-img-size-val">40%</span>
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
@@ -1122,11 +1156,21 @@
       <div class="form-row">
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label" for="pdf-password">Password</label>
-          <input class="form-input" type="password" id="pdf-password" placeholder="Enter password" autocomplete="new-password" />
+          <div class="password-wrapper">
+            <input class="form-input" type="password" id="pdf-password" placeholder="Enter password" autocomplete="new-password" />
+            <button type="button" class="password-toggle" id="toggle-password" aria-label="Show/Hide password">
+              👁️
+            </button>
+          </div>
         </div>
         <div class="form-group" style="margin-bottom:0">
           <label class="form-label" for="pdf-password2">Confirm Password</label>
-          <input class="form-input" type="password" id="pdf-password2" placeholder="Repeat password" autocomplete="new-password" />
+          <div class="password-wrapper">
+            <input class="form-input" type="password" id="pdf-password2" placeholder="Repeat password" autocomplete="new-password" />
+            <button type="button" class="password-toggle" id="toggle-password2" aria-label="Show/Hide password">
+              👁️
+            </button>
+          </div>
         </div>
       </div>
       <p style="font-size:0.75rem;color:var(--text3);margin-top:8px;">⚠️ Note: PDF password protection is applied via file metadata. For strong encryption use a dedicated tool.</p>
@@ -1230,6 +1274,8 @@ const wmColor        = document.getElementById('wm-color');
 const wmOpacity      = document.getElementById('wm-opacity');
 const wmOpacityVal   = document.getElementById('wm-opacity-val');
 const wmPosition     = document.getElementById('wm-position');
+const wmImgSize      = document.getElementById('wm-img-size');
+const wmImgSizeVal   = document.getElementById('wm-img-size-val');
 const pwdEnabled     = document.getElementById('pwd-enabled');
 const pwdSettings    = document.getElementById('pwd-settings');
 const pdfPassword    = document.getElementById('pdf-password');
@@ -1239,6 +1285,28 @@ const btnWmImg       = document.getElementById('btn-wm-img');
 const wmImgInput     = document.getElementById('wm-img-input');
 const wmImgPreview   = document.getElementById('wm-img-preview');
 const toastWrap      = document.getElementById('toast-wrap');
+
+// Password toggle functionality
+function setupPasswordToggle(toggleId, inputId) {
+  const toggleBtn = document.getElementById(toggleId);
+  const input = document.getElementById(inputId);
+  if (toggleBtn && input) {
+    toggleBtn.addEventListener('click', () => {
+      const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+      input.setAttribute('type', type);
+      toggleBtn.textContent = type === 'password' ? '👁️' : '🔒';
+    });
+  }
+}
+setupPasswordToggle('toggle-password', 'pdf-password');
+setupPasswordToggle('toggle-password2', 'pdf-password2');
+
+// Image watermark size range
+if (wmImgSize) {
+  wmImgSize.addEventListener('input', () => {
+    wmImgSizeVal.textContent = wmImgSize.value + '%';
+  });
+}
 
 function formatBytes(b) {
   if (b < 1024) return b + ' B';
@@ -1535,7 +1603,7 @@ wmImgInput.addEventListener('change', async e => {
 });
 
 async function drawWatermark(ctx, w, h, opts) {
-  const { type, text, fontSize, color, opacity, position, wmImgSrc } = opts;
+  const { type, text, fontSize, color, opacity, position, wmImgSrc, imgSizePercent } = opts;
 
   ctx.save();
   ctx.globalAlpha = opacity / 100;
@@ -1567,8 +1635,10 @@ async function drawWatermark(ctx, w, h, opts) {
       const img = new Image();
       img.onload = () => {
         let iw = img.width, ih = img.height;
-        const scale = (w * 0.4) / iw;
-        iw = iw * scale; ih = ih * scale;
+        const scalePercent = (imgSizePercent || 40) / 100;
+        const scale = (w * scalePercent) / iw;
+        iw = iw * scale;
+        ih = ih * scale;
 
         let x = 0, y = 0;
         if (position === 'center')           { x = (w - iw) / 2; y = (h - ih) / 2; }
@@ -1600,6 +1670,7 @@ async function generatePDF() {
   const wmCol     = wmColor.value;
   const wmOp      = parseInt(wmOpacity.value);
   const wmPos     = wmPosition.value;
+  const wmImgSizePercent = wmImgSize ? parseInt(wmImgSize.value) : 40;
   const usePwd    = pwdEnabled.checked;
   const pwd       = pdfPassword.value;
   const pwd2      = pdfPassword2.value;
@@ -1679,6 +1750,7 @@ async function generatePDF() {
           opacity: wmOp,
           position: wmPos,
           wmImgSrc: state.wmImgDataURL,
+          imgSizePercent: wmImgSizePercent,
         });
 
         const wmDataURL = canvas.toDataURL('image/png');
@@ -1778,7 +1850,7 @@ renderStats();
     }
     
     // Register Service Worker
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         window.addEventListener('load', async () => {
             try {
                 const registration = await navigator.serviceWorker.register('/sw.js', {
@@ -1917,7 +1989,7 @@ renderStats();
         setTimeout(() => successMsg.remove(), 3000);
     });
     
-    if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
         setInterval(() => {
             navigator.serviceWorker.ready.then(registration => {
                 registration.update();
